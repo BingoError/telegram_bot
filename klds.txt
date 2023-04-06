@@ -1,0 +1,36 @@
+def fprint(obj):
+#     text = json.dumps(obj, sort_keys=True, indent= 4 )
+#     print(text)
+
+# class Crypto:
+#     def init(self, obj: str):
+
+        
+#     def getCrypto(self):
+#         url = self.api + '/v1/cryptocurrency/map'
+#         res = self.session.get(url)
+#         data = res.json()['data'][0]
+#         return data
+    
+    
+#     def getCryptoBySymbol(self, symbol):
+#         url = self.api + '/v2/cryptocurrency/quotes/latest'
+#         params = {"symbol":symbol}
+#         res = self.session.get(url, params= params)
+#         data = res.json()['data']
+#         return data
+    
+#     def getCryptoById(self, symbol):
+#         url = self.api + '/v2/cryptocurrency/quotes/latest'
+#         params = {"id":symbol}
+#         res = self.session.get(url, params= params)
+#         data = res.json()['data']
+#         return data
+        
+#     def getShowCrypto(self):
+#         text = json.dumps(self.getCrypto(), sort_keys=True, indent= 4)
+#         return text
+    
+    
+# cr = Crypto(api_key)
+# print(cr.getShowCrypto())
