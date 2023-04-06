@@ -1,4 +1,8 @@
 from aiogram import  Dispatcher, types
+from aiogram.utils.markdown import bold, code
+import mark as key
+from aiogram.types.message import ParseMode
+
 from GetApi.getApi import *
 
 class HandlersRegisterBot:
@@ -19,5 +23,5 @@ class HandlersRegisterBot:
         if user_massage.lower():
             user_massage = user_massage.upper()
             
-        await message.answer(self.getPrice.GetSymbol(user_massage))
+        await message.answer(self.getPrice.GetSymbol(user_massage), parse_mode= ParseMode.MARKDOWN)
 
