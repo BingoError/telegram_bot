@@ -24,8 +24,9 @@ class GetPrice:
         return symbol
     
     def process_data(self,data):
-        price = data['price'].split(".")[0]  
-        return f"Symbol: {code(data['symbol'])}\nPrice: {code(price)}"
+        price = code(data['price']) 
+        price = price.replace('\\', '')
+        return f"Symbol: {code(data['symbol'])}\nPrice: {price}💲"
     
     def GetSymbol(self, symbol):
         try:
