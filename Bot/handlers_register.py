@@ -16,18 +16,21 @@ class HandlersRegisterBot:
         self.button1 = KeyboardButton('Add coin 💩')
         self.button2 = KeyboardButton('Show portfolio 🥸')
         self.reply_keyboard = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-
         self.reply_keyboard.add(self.button1, self.button2)
         self.getPrice = GetPrice()
         self.dp = dp
 
     def register_handlers(self):
         self.dp.register_message_handler(self.handle_start, commands=['start'])
+        # self.dp.register_message_handler(self.AddToPortfolio, types.Message)
+        
         self.dp.register_message_handler(self.handle_button1, text="Add coin 💩")
-        self.dp.register_message_handler(self.process_message, types.Message)
+        self.dp.register_message_handler(self.AddToPortfolio, lambda message: self.waiting_for_coin)
 
-        # self.dp.register_callback_query_handler(self.handle_button2, lambda c: c.data == 'button2')
-        # self.dp.register_message_handler(self.getPriceReq, types.Message)
+
+        self.dp.register_message_handler(self.show_portfolio_callback)
+        
+            # self.dp.register_message_handler(self.getPriceReq, types.Message)
 
     async def handle_start(self, message: types.Message):
         await message.answer(f"Hello this bot will help you control your portfolio on the crypto market.\nWrite {bold('BTCUSDT')} or {bold('BTC')} and get price this coin💹", parse_mode=ParseMode.MARKDOWN, reply_markup = self.reply_keyboard)
@@ -36,35 +39,44 @@ class HandlersRegisterBot:
     def checkCoin(self, name):
         id_coin = self.db.add_coin(name)        
         return id_coin
-        
-    
-    def checkUser(self, message):
-        user = message.from_user
-        username = user.username
+    def checkUser(self, username):        
         id_user = self.db.add_user(username)   
         return id_user
     
-#----------------------------------------------------------------------------------
-
     async def handle_button1(self, message: types.Message):      
         self.waiting_for_coin = True
         await message.answer(f"Write the coin you want to add your portfolio \n{bold('Example')}: ETH 1.1", parse_mode= ParseMode.MARKDOWN)
+             
+#----------------------------------------------------------------------------------
 
-    async def process_message(self, message: types.Message):
-        
+
+    async def show_portfolio_callback(self, message: types.Message):     
+        self.db.connect() 
+        userId = self.checkUser(message.from_user.username)
+        data = self.db.getPortfolio(userId)
+        self.db.close_connection()
+      
+        coin_dict = {}
+        for coin, quantity in data:
+           coin_dict[coin] = coin_dict.get(coin, 0) + quantity
+
+        output = ''
+        for coin, quantity in coin_dict.items():
+            output += f"{coin}: {quantity}\n"
+
+        await message.answer(output)
+ 
+    async def AddToPortfolio(self, message: types.Message):
         if self.waiting_for_coin: 
             text = message.text.strip()
             if self.COIN_AMOUNT_REGEX.match(text):   
-                
                 self.db.connect()
-                
                 coin, amount = text.split()
                 amount = float(amount)
                 data = {'coin': coin.upper(), 'amount': amount}
                 coinId = self.checkCoin(data['coin'])
-                userId = self.checkUser(message)
-                self.db.add_to_portfolio(userId, coinId, data['amount'])
-                 
+                userId = self.checkUser(message.from_user.username)
+                self.db.add_to_portfolio(userId, coinId, data['amount'])                 
                 self.db.close_connection()
                 
                 await message.answer("Add to portfolio")
@@ -73,6 +85,7 @@ class HandlersRegisterBot:
         else :
             await message.answer("Please choose the button", parse_mode=ParseMode.MARKDOWN)
             
+    
     
     
 

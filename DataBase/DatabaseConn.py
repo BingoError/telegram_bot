@@ -51,11 +51,29 @@ class PostgreSQL():
         self.id = self.queryToDatabase("coins", "name_coin", coin)
         return self.id
     
+    def get_coin_name(self ,coin_id):
+        coin_name = self.execute_connector(f"SELECT name_coin FROM coins WHERE id={coin_id}")      
+        return coin_name[0][0]
+
         
     def add_to_portfolio(self, user_id, coin_id, quantity):
         insert_query = f"INSERT INTO user_coins (user_id, coin_id, quantity) VALUES ({user_id}, {coin_id}, {quantity})"
         self.cursor.execute(insert_query)
         self.conn.commit()
+    
+    def getPortfolio(self, user_id):
+        insert_query = f"SELECT user_id , coin_id, quantity FROM user_coins WHERE user_id = {user_id};"
+        res = self.execute_connector(insert_query)
+       
+        coin_list = []
+        for r in res:
+            coin_id = r[1]
+            quantity = r[2]
+            name = self.get_coin_name(coin_id)
+            coin_list.append([name, quantity])
+
+        self.conn.commit()
+        return coin_list
        
     
     def close_connection(self):
