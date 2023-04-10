@@ -42,6 +42,21 @@ class PostgreSQL():
             print (e)
             return []
             
+            
+    def checkPortfolio(self, username):
+        self.cursor.execute(f"SELECT id FROM users WHERE nick_name = '{username}' ")
+        res = self.cursor.fetchone()
+        self.conn.commit()
+       
+       
+        self.cursor.execute(f"SELECT * FROM user_coins WHERE user_id = {res[0]}")
+        query = self.cursor.fetchone()
+        self.conn.commit()
+        
+        if query == None:
+            return False
+        return True
+        
     def add_user(self, username):
        self.id = self.queryToDatabase("users", "nick_name", username)
        return self.id
@@ -61,10 +76,11 @@ class PostgreSQL():
         self.cursor.execute(insert_query)
         self.conn.commit()
     
-    def getPortfolio(self, user_id):
+    def getPortfolio(self, user_id):       
+        
         insert_query = f"SELECT user_id , coin_id, quantity FROM user_coins WHERE user_id = {user_id};"
         res = self.execute_connector(insert_query)
-       
+               
         coin_list = []
         for r in res:
             coin_id = r[1]
@@ -75,7 +91,24 @@ class PostgreSQL():
         self.conn.commit()
         return coin_list
        
+    def update_portfolio(self, coin_id, user_id):
+        insert_query = f"DELETE FROM user_coins WHERE coin_id = {coin_id} AND user_id = {user_id};"
+        self.cursor.execute(insert_query)
+        self.conn.commit()
     
+    def delete_to_portfolio(self, user_id, coin_id, quantity):
+        select_query = f"SELECT CAST(SUM(quantity) AS DECIMAL(16,5)) AS total_quantity FROM user_coins WHERE user_id = {user_id} AND coin_id = {coin_id};"
+        res = self.execute_connector(select_query)
+        total_quantity = float(res[0][0]) if res and res[0] and res[0][0] else 0.0
+        new_quantity = total_quantity - float(quantity)
+       
+        insert_query = f"DELETE FROM user_coins WHERE coin_id = {coin_id} AND user_id = {user_id};"
+        self.cursor.execute(insert_query)
+        self.conn.commit()
+       
+        self.add_to_portfolio(user_id, coin_id, new_quantity)
+        return new_quantity
+        
     def close_connection(self):
         self.sort()        
         if self.cursor:
